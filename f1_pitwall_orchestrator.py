@@ -109,7 +109,7 @@ def _query_groq_direct_http(user_prompt: str, system_prompt: str) -> str:
                     {"role": "user", "content": user_prompt}
                 ],
                 "temperature": 0.35,
-                "max_tokens": 1024
+                "max_tokens": 4096  
             }).encode("utf-8")
 
             req = urllib.request.Request(
@@ -172,7 +172,7 @@ async def handle_pitwall_query(user_query: str) -> dict:
                     ],
                     model=model_name,
                     temperature=0.35,
-                    max_tokens=1024
+                    max_tokens=4096
                 )
                 answer_text = chat_completion.choices[0].message.content.strip()
                 if answer_text:
