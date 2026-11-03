@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  background-color: #08090b;
+  color: #f3f4f6;
+  font-family: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, monospace;
+  overflow-x: hidden;
+}
+
+/* 21st.dev inspired glassmorphic panels */
+.glass-panel {
+  background: rgba(22, 25, 34, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

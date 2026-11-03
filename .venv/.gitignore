@@ -1,0 +1,17 @@
+# Environment variables and secrets
+.env
+
+# Dependencies & build outputs
+node_modules/
+dist/
+build/
+.venv/
+
+# Python caches and local FastF1 caches
+__pycache__/
+f1_cache/
+fastf1_cache/
+
+# OS generated files
+.DS_Store
+Thumbs.db
