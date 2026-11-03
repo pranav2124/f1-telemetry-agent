@@ -150,7 +150,56 @@ def _route_specialist_badge(clean_query: str) -> str:
     return "SENIOR RACE ENGINEER"
 
 
-handle_pitwall_query
+async def handle_pitwall_query(user_query: str) -> dict:
+    clean_q = _cleanse_user_query(user_query)
+    specialist = _route_specialist_badge(clean_q)
+    full_prompt = user_query.strip()
+
+    system_prompt = (
+        "You are the Senior Pitwall Chief, Chief Race Strategist & Lead Performance Engineer for a Formula 1 team. "
+        "Answer the user's question directly. When asked for lists or multiple items, generate the complete "
+        "full list without cutting off prematurely. If a [Context: ...] block is present, reference the active season, track, and session."
+    )
+
+    client = get_groq_client()
+    if client:
+        for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+            try:
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": full_prompt}
+                    ],
+                    model=model_name,
+                    temperature=0.35,
+                    max_tokens=4096
+                )
+                answer_text = chat_completion.choices[0].message.content.strip()
+                if answer_text:
+                    return {
+                        "status": "SUCCESS",
+                        "specialist": specialist,
+                        "answer": answer_text,
+                        "telemetry_data": None
+                    }
+            except Exception as e:
+                print(f"[Groq SDK Error on {model_name}]: {e}")
+
+    answer_http = _query_groq_direct_http(full_prompt, system_prompt)
+    if answer_http:
+        return {
+            "status": "SUCCESS",
+            "specialist": specialist,
+            "answer": answer_http,
+            "telemetry_data": None
+        }
+
+    return {
+        "status": "ERROR",
+        "specialist": "COMM ERROR",
+        "answer": "Radio failure: Groq API key is missing or invalid. Check your .env file in the root directory.",
+        "telemetry_data": None
+    }
 
 def _resolve_fastf1_session(year: int, grand_prix: str, session_code: str):
     code = session_code.upper().strip()
