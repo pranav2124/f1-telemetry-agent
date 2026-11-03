@@ -4100,21 +4100,36 @@ export default function App() {
                   {m.sender} [{m.specialist}]
                 </div>
                 {m.sender !== "DRIVER" && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      downloadRaceReportPDF(
-                        `${selectedSeason} ${selectedCircuit} GP — ${m.specialist}`,
-                        m.text
-                      )
-                    }
-                    className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/50 text-cyan-300 text-[10px] font-black f1-display transition-all"
-                  >
-                    EXPORT PDF REPORT
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(m.text);
+                        alert("Response copied to clipboard!");
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 border border-white/10 text-gray-300 text-[10px] font-black f1-display transition-all"
+                    >
+                      COPY
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        downloadRaceReportPDF(
+                          `${selectedSeason} ${selectedCircuit} GP — ${m.specialist}`,
+                          m.text
+                        )
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/50 text-cyan-300 text-[10px] font-black f1-display transition-all"
+                    >
+                      EXPORT PDF REPORT
+                    </button>
+                  </div>
                 )}
               </div>
-              <div className="text-gray-200 whitespace-pre-wrap">{m.text}</div>
+              {/* Ensure full text preservation and whitespace formatting */}
+              <div className="text-gray-200 whitespace-pre-wrap leading-relaxed">
+                {m.text}
+              </div>
             </div>
           ))}
           {loading && (
