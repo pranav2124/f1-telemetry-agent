@@ -665,7 +665,7 @@ export default function App() {
     const fetchLiveGrid = async () => {
       tickCounter += 0.45;
       try {
-        const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/live_grid", {
+        const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/radio", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -2314,7 +2314,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 18000);
 
     try {
-      const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/compare", {
+      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/compare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2381,7 +2381,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 18000);
 
     try {
-      const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/circuit", {
+      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/circuit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2966,7 +2966,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/radio", {
+      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/live_grid", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
