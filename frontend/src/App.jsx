@@ -593,6 +593,10 @@ const HISTORICAL_GRIDS = {
   }
 };
 
+const API_BASE_URL = window.location.hostname === "localhost" 
+  ? "http://127.0.0.1:8000" 
+  : "https://f1-telemetry-agent-backend.onrender.com";
+
 export default function App() {
   const [selectedSeason, setSelectedSeason] = useState(2024);
   const [selectedSession, setSelectedSession] = useState("Q");
@@ -661,7 +665,7 @@ export default function App() {
     const fetchLiveGrid = async () => {
       tickCounter += 0.45;
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/live_grid", {
+        const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/live_grid", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -2310,7 +2314,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 18000);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/compare", {
+      const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/compare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2377,7 +2381,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 18000);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/circuit", {
+      const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/circuit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2962,7 +2966,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/radio", {
+      const res = await fetch("http://https://f1-telemetry-agent-backend.onrender.com/api/radio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
