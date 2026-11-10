@@ -24,6 +24,9 @@ import {
   Maximize2,
   Minimize2,
   ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Calendar,
   Layers,
   Globe,
@@ -594,6 +597,10 @@ export default function App() {
   const [selectedSeason, setSelectedSeason] = useState(2024);
   const [selectedSession, setSelectedSession] = useState("Q");
   const [selectedCircuit, setSelectedCircuit] = useState("Silverstone");
+
+  const [sessionInfoOpen, setSessionInfoOpen] = useState(true);
+  const [scrubberOpen, setScrubberOpen] = useState(true);
+  const [telemetryOpen, setTelemetryOpen] = useState(true);
 
   const activeCalendar = useMemo(
     () => SEASON_CALENDARS[selectedSeason] || SEASON_CALENDARS[2024],
@@ -3033,15 +3040,15 @@ export default function App() {
       `}</style>
 
       {/* ── MAIN 3D VIEWPORT & MULTI-SEASON TELEMETRY WORKSPACE ── */}
-      <div className="flex-1 flex flex-col relative w-full h-full">
-        {/* Top Command Navigation Bar */}
-        <div className="h-16 border-b border-[#1f2430] flex items-center justify-between px-4 bg-[#0d0f15]/95 backdrop-blur z-20 shadow-lg gap-2 overflow-x-auto">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)]"></span>
+      <div className="flex-1 flex flex-col relative w-full h-full pt-14 overflow-hidden">
+        {/* Top Command Navigation Bar — Fixed at Top, Single Even Row, No Scrollbars */}
+        <div className="fixed top-0 left-0 right-0 h-14 border-b border-[#1f2430] flex items-center justify-between px-3 md:px-4 bg-[#0d0f15]/98 backdrop-blur-xl z-50 shadow-lg gap-3 overflow-x-auto no-scrollbar whitespace-nowrap">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)] shrink-0"></span>
 
             {/* 1. Season Selector */}
-            <div className="flex items-center gap-1.5 bg-[#151821] border border-cyan-500/40 px-2.5 py-1.5 rounded-lg">
-              <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="flex items-center gap-1.5 bg-[#151821] border border-cyan-500/40 px-2.5 py-1 rounded-lg shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
               <span className="text-[10px] text-cyan-400 font-bold f1-display">YEAR:</span>
               <select
                 value={selectedSeason}
@@ -3061,8 +3068,8 @@ export default function App() {
             </div>
 
             {/* 2. Grand Prix Circuit Dropdown */}
-            <div className="flex items-center gap-1.5 bg-[#151821] border border-yellow-500/40 px-2.5 py-1.5 rounded-lg">
-              <MapPin className="w-3.5 h-3.5 text-yellow-400" />
+            <div className="flex items-center gap-1.5 bg-[#151821] border border-yellow-500/40 px-2.5 py-1 rounded-lg shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
               <select
                 value={selectedCircuit}
                 onChange={(e) => {
@@ -3083,15 +3090,15 @@ export default function App() {
             <button
               type="button"
               onClick={() => setShowGlobeModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-black shadow-[0_0_12px_rgba(6,182,212,0.5)] border border-cyan-300/40 transition-all f1-display"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-black shadow-[0_0_12px_rgba(6,182,212,0.5)] border border-cyan-300/40 transition-all f1-display shrink-0"
             >
-              <Globe className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "10s" }} />
+              <Globe className="w-3.5 h-3.5 animate-spin shrink-0" style={{ animationDuration: "10s" }} />
               F1 WORLD GLOBE
             </button>
 
             {/* 4. Session Selector */}
-            <div className="flex items-center gap-1.5 bg-[#151821] border border-red-500/40 px-2.5 py-1.5 rounded-lg">
-              <Layers className="w-3.5 h-3.5 text-red-400" />
+            <div className="flex items-center gap-1.5 bg-[#151821] border border-red-500/40 px-2.5 py-1 rounded-lg shrink-0">
+              <Layers className="w-3.5 h-3.5 text-red-400 shrink-0" />
               <select
                 value={selectedSession}
                 onChange={(e) => {
@@ -3109,7 +3116,7 @@ export default function App() {
             </div>
 
             {/* 5. Driver Duel Selector + Big Compare Telemetry Modal Trigger */}
-            <div className="flex items-center gap-1.5 bg-[#12151d] border border-cyan-500/30 px-2.5 py-1.5 rounded-lg">
+            <div className="flex items-center gap-1.5 bg-[#12151d] border border-cyan-500/30 px-2.5 py-1 rounded-lg shrink-0">
               <span className="text-[10px] text-gray-400 font-bold f1-display">DUEL:</span>
               <select
                 value={driverA}
@@ -3137,65 +3144,70 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => triggerDirectComparison(selectedLap, true)}
-                className="ml-1 flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-500 text-white text-xs font-black rounded shadow-[0_0_12px_rgba(220,38,38,0.6)] transition-all active:scale-95 f1-display"
+                className="ml-1 flex items-center gap-1.5 px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white text-xs font-black rounded shadow-[0_0_12px_rgba(220,38,38,0.6)] transition-all active:scale-95 f1-display shrink-0"
               >
-                <GitCompare className="w-3.5 h-3.5" />
+                <GitCompare className="w-3.5 h-3.5 shrink-0" />
                 {comparing ? "SYNCING..." : "COMPARE TELEMETRY"}
               </button>
             </div>
           </div>
 
-          {/* Right Camera, Time-of-Day & AI Agent Controls */}
+          {/* Right Camera, Landmark & AI Agent Controls */}
           <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
             <button
+              type="button"
               onClick={focusLandmarkAttraction}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-amber-500/40 text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 transition-all font-bold f1-display text-[10px]"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-amber-500/40 text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 transition-all font-bold f1-display text-[10px] shrink-0"
               title={currentAttraction.name}
             >
-              <MapPin className="w-3.5 h-3.5" />
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
               LANDMARK
             </button>
 
             <button
+              type="button"
               onClick={focusExtremeZoom}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-cyan-500/40 text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all font-bold f1-display text-[10px]"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-cyan-500/40 text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all font-bold f1-display text-[10px] shrink-0"
             >
-              <ZoomIn className="w-3.5 h-3.5" />
+              <ZoomIn className="w-3.5 h-3.5 shrink-0" />
               COCKPIT
             </button>
 
             <button
+              type="button"
               onClick={toggleChaseCamera}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border transition-all font-bold f1-display text-[10px] ${
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border transition-all font-bold f1-display text-[10px] shrink-0 ${
                 cameraMode === "CHASE_A"
                   ? "border-red-500 text-red-400 bg-red-500/10 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                   : "border-gray-700 text-gray-400 hover:text-white"
               }`}
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-3.5 h-3.5 shrink-0" />
               CHASE: {cameraMode === "CHASE_A" ? "ON" : "OFF"}
             </button>
 
             <button
+              type="button"
               onClick={() => setIsAgentOpen(!isAgentOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-extrabold text-xs bg-red-600 hover:bg-red-500 text-white shadow-lg border border-red-400 f1-display"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-lg font-extrabold text-xs bg-red-600 hover:bg-red-500 text-white shadow-lg border border-red-400 f1-display shrink-0"
             >
-              <Bot className="w-4 h-4" />
+              <Bot className="w-4 h-4 shrink-0" />
               {isAgentOpen ? "CLOSE AI" : "PITWALL AI"}
             </button>
           </div>
         </div>
 
-        {/* 3D Track & Environment Viewport */}
+        {/* 3D Track & Environment Full-Screen Viewport */}
         <div className="flex-1 relative overflow-hidden flex flex-col">
           <div
             ref={canvasRef}
             className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
           />
 
-{/* ── TOP-CENTER LIVE 2026 22-CAR BROADCAST & FIA FLAG DIRECTOR BAR ── */}
-          <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-[#0b0e17]/95 backdrop-blur-md p-2.5 rounded-xl border border-red-500/40 shadow-2xl flex-wrap">
+          {/* ── TOP-RIGHT LIVE 2026 22-CAR BROADCAST & FIA FLAG DIRECTOR BAR ── */}
+          <div className="absolute top-3 right-3 z-20 flex items-center gap-2 bg-[#0b0e17]/95 backdrop-blur-md p-2 rounded-xl border border-red-500/40 shadow-2xl flex-wrap max-w-[92vw]">
             <button
+              type="button"
               onClick={() => {
                 const nextState = !isLive22CarMode;
                 setIsLive22CarMode(nextState);
@@ -3203,7 +3215,7 @@ export default function App() {
                   startFormationGridLightsSequence();
                 }
               }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-black f1-display transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-black f1-display transition-all flex items-center gap-1.5 ${
                 isLive22CarMode
                   ? "bg-red-600 text-white shadow-[0_0_16px_rgba(220,38,38,0.8)] animate-pulse"
                   : "bg-[#161b26] text-gray-300 hover:text-white border border-white/10"
@@ -3214,7 +3226,7 @@ export default function App() {
             </button>
 
             {isLive22CarMode && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 {[
                   { id: "FORMATION_START", label: "GRID LIGHTS", cls: "border-cyan-400 text-cyan-300" },
                   { id: "GREEN", label: "GREEN FLAG", cls: "border-emerald-400 text-emerald-300" },
@@ -3223,6 +3235,7 @@ export default function App() {
                   { id: "RED_FLAG", label: "RED FLAG", cls: "border-red-500 text-red-400" }
                 ].map((f) => (
                   <button
+                    type="button"
                     key={f.id}
                     onClick={() => {
                       setLiveFlagStatus(f.id);
@@ -3241,8 +3254,7 @@ export default function App() {
 
           {/* ── LEFT-SIDE OFFICIAL F1 TV 22-CAR LIVE SCORING & POSITION TICKER TOWER ── */}
           {isLive22CarMode && liveBroadcastState && (
-            <div className="absolute top-36 left-4 bottom-28 w-72 bg-[#090b10]/92 backdrop-blur-xl rounded-2xl border border-white/15 z-20 flex flex-col shadow-[0_0_45px_rgba(0,0,0,0.85)] overflow-hidden">
-              {/* F1 Broadcast Header & Track Flag Banner */}
+            <div className="absolute top-36 left-4 bottom-28 w-68 md:w-72 bg-[#090b10]/92 backdrop-blur-xl rounded-2xl border border-white/15 z-20 flex flex-col shadow-[0_0_45px_rgba(0,0,0,0.85)] overflow-hidden">
               <div className="p-3 bg-[#111520] border-b border-white/10">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-white f1-display">
@@ -3255,8 +3267,6 @@ export default function App() {
                 <div className="text-[10px] text-gray-400 truncate mt-0.5">
                   {liveBroadcastState.race_name} • {liveBroadcastState.scheduled_start_ist}
                 </div>
-
-                {/* Dynamic Track Status Banner */}
                 <div
                   className={`mt-2 py-1 px-2 rounded text-center text-[10px] font-black f1-display ${
                     liveBroadcastState.track_flag === "GREEN"
@@ -3270,8 +3280,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Scrollable 22-Driver Position List */}
-              <div className="flex-1 overflow-y-auto divide-y divide-white/5 px-2 py-1">
+              <div className="flex-1 overflow-y-auto no-scrollbar divide-y divide-white/5 px-2 py-1">
                 {liveBroadcastState.cars.map((c) => (
                   <div
                     key={c.code}
@@ -3315,7 +3324,6 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Upcoming 2026 Live Broadcast Loop Selector */}
               <div className="p-2.5 bg-[#0e121b] border-t border-white/10">
                 <div className="text-[9px] font-black text-cyan-400 f1-display mb-1">
                   UPCOMING 2026 LIVE BROADCAST LOOP:
@@ -3323,6 +3331,7 @@ export default function App() {
                 <div className="grid grid-cols-2 gap-1">
                   {liveBroadcastState.upcoming_loop.map((up) => (
                     <button
+                      type="button"
                       key={up.circuit}
                       onClick={() => setSelectedCircuit(up.circuit)}
                       className={`px-2 py-1 rounded text-[9px] font-bold text-left truncate border ${
@@ -3368,7 +3377,7 @@ export default function App() {
 
           {/* ── LAP 1 STARTING GANTRY 5-RED-LIGHTS OVERLAY BANNER ── */}
           {gantryLightsCount > 0 && (
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-[#090b10]/95 border-2 border-red-500/60 px-6 py-3 rounded-2xl z-30 flex flex-col items-center gap-2 shadow-[0_0_40px_rgba(239,68,68,0.6)]">
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-[#090b10]/95 border-2 border-red-500/60 px-6 py-3 rounded-2xl z-30 flex flex-col items-center gap-2 shadow-[0_0_40px_rgba(239,68,68,0.6)]">
               <div className="flex items-center gap-3">
                 {[1, 2, 3, 4, 5].map((num) => (
                   <div
@@ -3391,64 +3400,87 @@ export default function App() {
             </div>
           )}
 
-          {/* Top-Left Live Session, Time-of-Day, Landmark & Driver Telemetry Badge */}
-          <div className="absolute top-4 left-4 bg-[#0d0f15]/90 backdrop-blur-md rounded-xl p-3.5 border border-white/10 z-10 flex flex-col gap-1.5 shadow-2xl max-w-xl">
-            <div className="flex items-center gap-2.5 text-xs font-extrabold text-white flex-wrap">
-              <span
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: currentGrid[driverA]?.primary || "#dc2626" }}
-              ></span>
-              <span className="f1-display">
-                {selectedSeason} {selectedCircuit.toUpperCase()} GP — {activeSessionObj.name}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] f1-display">
-                {sessionLoading ? "SYNCING FASTF1..." : dataSourceBadge}
-              </span>
-              {/* Time-of-Day Live Selector & Badge */}
-              <div className="flex items-center gap-1 bg-[#161b26] border border-amber-400/40 px-2 py-0.5 rounded text-[10px] text-amber-300">
-                {timeOfDay === "NIGHT" ? (
-                  <Moon className="w-3 h-3 text-cyan-300" />
-                ) : timeOfDay === "EVENING" ? (
-                  <Sunset className="w-3 h-3 text-orange-400" />
-                ) : (
-                  <Sun className="w-3 h-3 text-yellow-400" />
-                )}
-                <select
-                  value={timeOfDay}
-                  onChange={(e) => setTimeOfDay(e.target.value)}
-                  className="bg-transparent font-black text-amber-300 focus:outline-none cursor-pointer f1-display"
-                >
-                  <option value="MORNING" className="bg-[#0d0f15]">MORNING SESSION</option>
-                  <option value="AFTERNOON" className="bg-[#0d0f15]">AFTERNOON SESSION</option>
-                  <option value="EVENING" className="bg-[#0d0f15]">EVENING / SUNSET</option>
-                  <option value="NIGHT" className="bg-[#0d0f15]">NIGHT FLOODLIGHTS</option>
-                </select>
+          {/* ── 1. COLLAPSIBLE SESSION INFORMATION BOX (WITH SIDE ARROW BUTTON) ── */}
+          <div
+            className={`absolute top-3 left-3 bg-[#0d0f15]/95 backdrop-blur-md rounded-2xl border border-white/15 z-30 shadow-2xl transition-all duration-300 ${
+              sessionInfoOpen ? "p-3.5 max-w-[90vw] md:max-w-xl" : "p-2 w-10"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setSessionInfoOpen(!sessionInfoOpen)}
+              className="absolute -right-3.5 top-1/2 -translate-y-1/2 bg-[#151a26] border border-cyan-400/60 text-cyan-300 p-1 rounded-full shadow-lg hover:bg-cyan-500 hover:text-black transition-colors z-40"
+              title={sessionInfoOpen ? "Collapse Session Information" : "Expand Session Information"}
+            >
+              {sessionInfoOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+            </button>
+
+            {sessionInfoOpen ? (
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2.5 text-xs font-extrabold text-white flex-wrap">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: currentGrid[driverA]?.primary || "#dc2626" }}
+                  ></span>
+                  <span className="f1-display">
+                    {selectedSeason} {selectedCircuit.toUpperCase()} GP — {activeSessionObj.name}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] f1-display">
+                    {sessionLoading ? "SYNCING FASTF1..." : dataSourceBadge}
+                  </span>
+                  <div className="flex items-center gap-1 bg-[#161b26] border border-amber-400/40 px-2 py-0.5 rounded text-[10px] text-amber-300">
+                    {timeOfDay === "NIGHT" ? (
+                      <Moon className="w-3 h-3 text-cyan-300" />
+                    ) : timeOfDay === "EVENING" ? (
+                      <Sunset className="w-3 h-3 text-orange-400" />
+                    ) : (
+                      <Sun className="w-3 h-3 text-yellow-400" />
+                    )}
+                    <select
+                      value={timeOfDay}
+                      onChange={(e) => setTimeOfDay(e.target.value)}
+                      className="bg-transparent font-black text-amber-300 focus:outline-none cursor-pointer f1-display"
+                    >
+                      <option value="MORNING" className="bg-[#0d0f15]">MORNING SESSION</option>
+                      <option value="AFTERNOON" className="bg-[#0d0f15]">AFTERNOON SESSION</option>
+                      <option value="EVENING" className="bg-[#0d0f15]">EVENING / SUNSET</option>
+                      <option value="NIGHT" className="bg-[#0d0f15]">NIGHT FLOODLIGHTS</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 text-[11px] text-gray-300 flex-wrap">
+                  <span>
+                    <strong className="text-yellow-400 f1-display">{driverA}</strong> ({currentGrid[driverA]?.team}) vs{" "}
+                    <strong className="text-cyan-400 f1-display">{driverB}</strong> ({currentGrid[driverB]?.team})
+                  </span>
+                  <span className="pl-3 border-l border-white/10 text-emerald-400 font-black f1-display">
+                    FASTEST LAP: {telemetry.lapTime}
+                  </span>
+                  <span className="pl-3 border-l border-white/10 text-cyan-400 font-black f1-display">
+                    LIVE DELTA: {liveDelta}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[11px] text-amber-300/90">
+                  <span>
+                    <strong>3D ATTRACTION:</strong> {currentAttraction.name} (Hover 3D model on track for details)
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-4 text-[11px] text-gray-300 flex-wrap">
-              <span>
-                <strong className="text-yellow-400 f1-display">{driverA}</strong> ({currentGrid[driverA]?.team}) vs{" "}
-                <strong className="text-cyan-400 f1-display">{driverB}</strong> ({currentGrid[driverB]?.team})
-              </span>
-              <span className="pl-3 border-l border-white/10 text-emerald-400 font-black f1-display">
-                FASTEST LAP: {telemetry.lapTime}
-              </span>
-              <span className="pl-3 border-l border-white/10 text-cyan-400 font-black f1-display">
-                LIVE DELTA: {liveDelta}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[11px] text-amber-300/90">
-              <span>
-                <strong>3D ATTRACTION:</strong> {currentAttraction.name} (Hover 3D model on track for details)
-              </span>
-            </div>
+            ) : (
+              <div className="py-4 flex items-center justify-center">
+                <span className="[writing-mode:vertical-rl] text-[10px] font-black text-cyan-400 tracking-widest f1-display">
+                  SESSION INFO
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Right Quick-Open AI Tab */}
           {!isAgentOpen && (
             <button
+              type="button"
               onClick={() => setIsAgentOpen(true)}
               className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#0d0f15]/95 hover:bg-red-600 text-white border-l border-t border-b border-red-500/50 rounded-l-2xl py-5 px-2.5 z-20 flex flex-col items-center gap-2 shadow-2xl transition-all group"
             >
@@ -3460,244 +3492,288 @@ export default function App() {
             </button>
           )}
 
-          {/* ── BOTTOM TIMELINE LAP SCRUBBER WITH ALL-LAPS DROPDOWN ── */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[94%] max-w-4xl bg-[#0d0f15]/92 backdrop-blur-lg rounded-2xl p-3.5 border border-white/15 z-10 shadow-2xl flex flex-col gap-2">
-            <div className="flex items-center justify-between text-xs font-bold text-gray-300 px-1 flex-wrap gap-2">
-              <span className="text-yellow-400 font-extrabold f1-display">
-                #{currentGrid[driverA]?.number} {driverA}
-              </span>
+          {/* ── 2. COLLAPSIBLE LAP TELEMETRY SCRUBBER (WITH SIDE ARROW BUTTON) ── */}
+          <div
+            className={`absolute left-1/2 -translate-x-1/2 bg-[#0d0f15]/95 backdrop-blur-lg rounded-2xl border border-white/15 z-30 shadow-2xl transition-all duration-300 ${
+              telemetryOpen ? "bottom-48" : "bottom-6"
+            } ${scrubberOpen ? "w-[94%] max-w-4xl p-3.5" : "w-auto px-5 py-2"}`}
+          >
+            <button
+              type="button"
+              onClick={() => setScrubberOpen(!scrubberOpen)}
+              className="absolute -right-3.5 top-1/2 -translate-y-1/2 bg-[#151a26] border border-cyan-400/60 text-cyan-300 p-1 rounded-full shadow-lg hover:bg-cyan-500 hover:text-black transition-colors z-40"
+              title={scrubberOpen ? "Collapse Scrubber" : "Expand Scrubber"}
+            >
+              {scrubberOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+            </button>
 
-              {/* Lap Telemetry Scrubber Dropdown for all Laps of the Selected Grand Prix */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-gray-300 tracking-wider f1-display">
-                  LAP TELEMETRY SCRUBBER ({Math.round(scrubProgress * 100)}%):
-                </span>
-                <select
-                  value={selectedLap}
-                  onChange={(e) => handleLapChange(e.target.value)}
-                  className="bg-[#161b28] text-cyan-300 border border-cyan-500/50 rounded-lg px-2.5 py-1 text-xs font-black focus:outline-none cursor-pointer f1-display"
-                >
-                  <option value="FASTEST">FASTEST FLYING LAP</option>
-                  {availableLaps.map((lapNum) => (
-                    <option key={lapNum} value={lapNum}>
-                      LAP {lapNum} {lapNum === 1 ? "(FORMATION GRID START)" : `— ${selectedCircuit.toUpperCase()}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            {scrubberOpen ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-300 px-1 flex-wrap gap-2">
+                  <span className="text-yellow-400 font-extrabold f1-display">
+                    #{currentGrid[driverA]?.number} {driverA}
+                  </span>
 
-              <span className="text-cyan-400 font-extrabold f1-display">
-                #{currentGrid[driverB]?.number} {driverB}
-              </span>
-            </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-gray-300 tracking-wider f1-display">
+                      LAP TELEMETRY SCRUBBER ({Math.round(scrubProgress * 100)}%):
+                    </span>
+                    <select
+                      value={selectedLap}
+                      onChange={(e) => handleLapChange(e.target.value)}
+                      className="bg-[#161b28] text-cyan-300 border border-cyan-500/50 rounded-lg px-2.5 py-1 text-xs font-black focus:outline-none cursor-pointer f1-display"
+                    >
+                      <option value="FASTEST">FASTEST FLYING LAP</option>
+                      {availableLaps.map((lapNum) => (
+                        <option key={lapNum} value={lapNum}>
+                          LAP {lapNum} {lapNum === 1 ? "(FORMATION GRID START)" : `— ${selectedCircuit.toUpperCase()}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.001"
-              value={scrubProgress}
-              onChange={(e) => {
-                const val = parseFloat(e.target.value);
-                setScrubProgress(val);
-                playbackRef.current.progress = val;
-              }}
-              className="w-full h-2 bg-[#1b202e] rounded-lg appearance-none cursor-pointer accent-cyan-400"
-            />
+                  <span className="text-cyan-400 font-extrabold f1-display">
+                    #{currentGrid[driverB]?.number} {driverB}
+                  </span>
+                </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="p-2 rounded-lg bg-[#161a24] hover:bg-[#202738] border border-white/10 text-white transition-all"
-                >
-                  {isPlaying ? (
-                    <Pause className="w-4 h-4 text-cyan-400" />
-                  ) : (
-                    <Play className="w-4 h-4 text-emerald-400" />
-                  )}
-                </button>
-                <button
-                  onClick={() => {
-                    if (Number(selectedLap) === 1) {
-                      startFormationGridLightsSequence();
-                    } else {
-                      playbackRef.current.progress = 0;
-                      setScrubProgress(0);
-                      setIsPlaying(true);
-                    }
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.001"
+                  value={scrubProgress}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setScrubProgress(val);
+                    playbackRef.current.progress = val;
                   }}
-                  className="p-2 rounded-lg bg-[#161a24] hover:bg-[#202738] border border-white/10 text-gray-300"
-                  title="Restart Lap / Grid Launch"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleLapChange(1)}
-                  className="px-2.5 py-1 rounded-lg bg-red-600/20 hover:bg-red-600/35 border border-red-500/40 text-[10px] font-black text-red-300 f1-display"
-                >
-                  LAUNCH LAP 1 GRID START
-                </button>
-              </div>
+                  className="w-full h-2 bg-[#1b202e] rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                />
 
-              <button
-                onClick={() =>
-                  setPlaybackSpeed(
-                    playbackSpeed === 0.5 ? 1.0 : playbackSpeed === 1.0 ? 2.0 : 0.5
-                  )
-                }
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[#161a24] hover:bg-[#202738] border border-white/10 text-xs font-bold text-cyan-300 f1-display"
-              >
-                <FastForward className="w-3.5 h-3.5" />
-                {playbackSpeed.toFixed(1)}x PLAYBACK
-              </button>
-            </div>
-          </div>
-        </div>
+                <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsPlaying(!isPlaying)}
+                      className="p-2 rounded-lg bg-[#161a24] hover:bg-[#202738] border border-white/10 text-white transition-all"
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-4 h-4 text-cyan-400" />
+                      ) : (
+                        <Play className="w-4 h-4 text-emerald-400" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (Number(selectedLap) === 1) {
+                          startFormationGridLightsSequence();
+                        } else {
+                          playbackRef.current.progress = 0;
+                          setScrubProgress(0);
+                          setIsPlaying(true);
+                        }
+                      }}
+                      className="p-2 rounded-lg bg-[#161a24] hover:bg-[#202738] border border-white/10 text-gray-300"
+                      title="Restart Lap / Grid Launch"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleLapChange(1)}
+                      className="px-2.5 py-1 rounded-lg bg-red-600/20 hover:bg-red-600/35 border border-red-500/40 text-[10px] font-black text-red-300 f1-display"
+                    >
+                      LAUNCH LAP 1 GRID START
+                    </button>
+                  </div>
 
-       {/* ── DUAL-DRIVER SYNCHRONIZED TELEMETRY HUD (DRIVER A & DRIVER B) ── */}
-        <div className="h-48 border-t border-[#1f2430] bg-[#0a0c12]/95 px-5 py-3.5 grid grid-cols-1 lg:grid-cols-2 gap-5 z-10 shadow-2xl">
-          {/* DRIVER A TELEMETRY CONSOLE */}
-          <div className="bg-[#121621]/95 rounded-2xl p-3.5 border border-yellow-500/35 flex items-center gap-4 shadow-lg">
-            {/* Driver A Speed, RPM & DRS */}
-            <div className="w-44 bg-[#0b0e15] rounded-xl p-3 border border-white/5 flex flex-col justify-between h-full">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black text-yellow-400 f1-display flex items-center gap-1">
-                  <Gauge className="w-3.5 h-3.5" /> #{currentGrid[driverA]?.number} {driverA}
-                </span>
-                <span className="text-[9px] text-gray-400 truncate max-w-[75px]">
-                  {currentGrid[driverA]?.team}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1 my-auto">
-                <span ref={speedRef} className="text-3xl font-black text-white f1-display">
-                  {telemetry.speed}
-                </span>
-                <span className="text-[10px] text-gray-400 font-bold f1-display">KM/H</span>
-              </div>
-              <div className="flex items-center justify-between text-[10px] pt-1 border-t border-white/10">
-                <span className="text-gray-300 font-bold">RPM: {telemetry.rpm}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-black f1-display ${
-                    telemetry.drs === "OPEN"
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                      : "bg-gray-800 text-gray-400"
-                  }`}
-                >
-                  DRS {telemetry.drs}
-                </span>
-              </div>
-            </div>
-
-            {/* Driver A Throttle & Brake Bars */}
-            <div className="flex-1 flex flex-col justify-around h-full py-1">
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-emerald-400 font-black f1-display">{driverA} THROTTLE</span>
-                  <span className="text-white font-bold f1-display">{telemetry.throttle}%</span>
-                </div>
-                <div className="h-3 w-full bg-[#080a0f] rounded-full overflow-hidden border border-emerald-500/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-75"
-                    style={{ width: `${telemetry.throttle}%` }}
-                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPlaybackSpeed(
+                        playbackSpeed === 0.5 ? 1.0 : playbackSpeed === 1.0 ? 2.0 : 0.5
+                      )
+                    }
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[#161a24] hover:bg-[#202738] border border-white/10 text-xs font-bold text-cyan-300 f1-display"
+                  >
+                    <FastForward className="w-3.5 h-3.5" />
+                    {playbackSpeed.toFixed(1)}x PLAYBACK
+                  </button>
                 </div>
               </div>
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-red-500 font-black f1-display">{driverA} BRAKE</span>
-                  <span className="text-white font-bold f1-display">{telemetry.brake}%</span>
-                </div>
-                <div className="h-3 w-full bg-[#080a0f] rounded-full overflow-hidden border border-red-500/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-75"
-                    style={{ width: `${telemetry.brake}%` }}
-                  />
-                </div>
+            ) : (
+              <div className="flex items-center gap-2 text-[11px] font-black text-cyan-400 f1-display whitespace-nowrap">
+                <span>SCRUBBER ({Math.round(scrubProgress * 100)}%)</span>
               </div>
-            </div>
-
-            {/* Driver A Gear */}
-            <div className="w-20 bg-[#0b0e15] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center h-full">
-              <span className="text-[9px] text-gray-400 font-bold f1-display">GEAR</span>
-              <span className="text-4xl font-black text-yellow-400 f1-display">{telemetry.gear}</span>
-            </div>
+            )}
           </div>
 
-          {/* DRIVER B TELEMETRY CONSOLE */}
-          <div className="bg-[#121621]/95 rounded-2xl p-3.5 border border-cyan-500/35 flex items-center gap-4 shadow-lg">
-            {/* Driver B Speed, RPM & DRS */}
-            <div className="w-44 bg-[#0b0e15] rounded-xl p-3 border border-white/5 flex flex-col justify-between h-full">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black text-cyan-400 f1-display flex items-center gap-1">
-                  <Gauge className="w-3.5 h-3.5" /> #{currentGrid[driverB]?.number} {driverB}
-                </span>
-                <span className="text-[9px] text-gray-400 truncate max-w-[75px]">
-                  {currentGrid[driverB]?.team}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1 my-auto">
-                <span className="text-3xl font-black text-white f1-display">
-                  {telemetry.speedB}
-                </span>
-                <span className="text-[10px] text-gray-400 font-bold f1-display">KM/H</span>
-              </div>
-              <div className="flex items-center justify-between text-[10px] pt-1 border-t border-white/10">
-                <span className="text-gray-300 font-bold">RPM: {telemetry.rpmB}</span>
-                <span
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-black f1-display ${
-                    telemetry.drsB === "OPEN"
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-                      : "bg-gray-800 text-gray-400"
-                  }`}
-                >
-                  DRS {telemetry.drsB}
-                </span>
-              </div>
-            </div>
+          {/* ── 3. COLLAPSIBLE DRIVER TELEMETRY PANEL (WITH SIDE & TOP ARROW BUTTONS) ── */}
+          <div
+            className={`absolute bottom-0 left-0 right-0 border-t border-[#1f2430] bg-[#0a0c12]/98 backdrop-blur-xl px-4 py-3 z-30 shadow-2xl transition-all duration-300 ${
+              telemetryOpen ? "translate-y-0" : "translate-y-[calc(100%-28px)]"
+            }`}
+          >
+            {/* Top-Center Collapse Arrow Tab */}
+            <button
+              type="button"
+              onClick={() => setTelemetryOpen(!telemetryOpen)}
+              className="absolute left-1/2 -top-3.5 -translate-x-1/2 bg-[#151a26] border border-cyan-400/60 text-cyan-300 px-3 py-0.5 rounded-full shadow-lg hover:bg-cyan-500 hover:text-black transition-colors z-40 flex items-center gap-1 text-[10px] font-black f1-display"
+              title={telemetryOpen ? "Collapse Driver Telemetry Panel" : "Expand Driver Telemetry Panel"}
+            >
+              {telemetryOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+              <span>{telemetryOpen ? "HIDE TELEMETRY" : "DRIVER TELEMETRY"}</span>
+            </button>
 
-            {/* Driver B Throttle & Brake Bars */}
-            <div className="flex-1 flex flex-col justify-around h-full py-1">
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-emerald-400 font-black f1-display">{driverB} THROTTLE</span>
-                  <span className="text-white font-bold f1-display">{telemetry.throttleB}%</span>
-                </div>
-                <div className="h-3 w-full bg-[#080a0f] rounded-full overflow-hidden border border-emerald-500/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-75"
-                    style={{ width: `${telemetry.throttleB}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-red-500 font-black f1-display">{driverB} BRAKE</span>
-                  <span className="text-white font-bold f1-display">{telemetry.brakeB}%</span>
-                </div>
-                <div className="h-3 w-full bg-[#080a0f] rounded-full overflow-hidden border border-red-500/30">
-                  <div
-                    className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-75"
-                    style={{ width: `${telemetry.brakeB}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+            {/* Side Arrow Collapse Button */}
+            <button
+              type="button"
+              onClick={() => setTelemetryOpen(!telemetryOpen)}
+              className="absolute right-4 -top-3.5 bg-[#151a26] border border-cyan-400/60 text-cyan-300 p-1 rounded-full shadow-lg hover:bg-cyan-500 hover:text-black transition-colors z-40"
+              title={telemetryOpen ? "Collapse Driver Telemetry Panel" : "Expand Driver Telemetry Panel"}
+            >
+              {telemetryOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+            </button>
 
-            {/* Driver B Gear */}
-            <div className="w-20 bg-[#0b0e15] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center h-full">
-              <span className="text-[9px] text-gray-400 font-bold f1-display">GEAR</span>
-              <span className="text-4xl font-black text-cyan-400 f1-display">{telemetry.gearB}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-7xl mx-auto">
+              {/* DRIVER A TELEMETRY CONSOLE */}
+              <div className="bg-[#121621]/95 rounded-2xl p-3 border border-yellow-500/35 flex items-center gap-3 md:gap-4 shadow-lg">
+                <div className="w-36 md:w-44 bg-[#0b0e15] rounded-xl p-2.5 border border-white/5 flex flex-col justify-between h-full shrink-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-yellow-400 f1-display flex items-center gap-1">
+                      <Gauge className="w-3.5 h-3.5" /> #{currentGrid[driverA]?.number} {driverA}
+                    </span>
+                    <span className="text-[9px] text-gray-400 truncate max-w-[70px]">
+                      {currentGrid[driverA]?.team}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 my-1">
+                    <span ref={speedRef} className="text-2xl md:text-3xl font-black text-white f1-display">
+                      {telemetry.speed}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-bold f1-display">KM/H</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] pt-1 border-t border-white/10">
+                    <span className="text-gray-300 font-bold">RPM: {telemetry.rpm}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[9px] font-black f1-display ${
+                        telemetry.drs === "OPEN"
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                          : "bg-gray-800 text-gray-400"
+                      }`}
+                    >
+                      DRS {telemetry.drs}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col justify-around h-full py-1 space-y-2">
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-1">
+                      <span className="text-emerald-400 font-black f1-display">{driverA} THROTTLE</span>
+                      <span className="text-white font-bold f1-display">{telemetry.throttle}%</span>
+                    </div>
+                    <div className="h-2.5 w-full bg-[#080a0f] rounded-full overflow-hidden border border-emerald-500/30">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-75"
+                        style={{ width: `${telemetry.throttle}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-1">
+                      <span className="text-red-500 font-black f1-display">{driverA} BRAKE</span>
+                      <span className="text-white font-bold f1-display">{telemetry.brake}%</span>
+                    </div>
+                    <div className="h-2.5 w-full bg-[#080a0f] rounded-full overflow-hidden border border-red-500/30">
+                      <div
+                        className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-75"
+                        style={{ width: `${telemetry.brake}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-16 md:w-20 bg-[#0b0e15] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center h-full shrink-0">
+                  <span className="text-[9px] text-gray-400 font-bold f1-display">GEAR</span>
+                  <span className="text-3xl md:text-4xl font-black text-yellow-400 f1-display">{telemetry.gear}</span>
+                </div>
+              </div>
+
+              {/* DRIVER B TELEMETRY CONSOLE */}
+              <div className="bg-[#121621]/95 rounded-2xl p-3 border border-cyan-500/35 flex items-center gap-3 md:gap-4 shadow-lg">
+                <div className="w-36 md:w-44 bg-[#0b0e15] rounded-xl p-2.5 border border-white/5 flex flex-col justify-between h-full shrink-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black text-cyan-400 f1-display flex items-center gap-1">
+                      <Gauge className="w-3.5 h-3.5" /> #{currentGrid[driverB]?.number} {driverB}
+                    </span>
+                    <span className="text-[9px] text-gray-400 truncate max-w-[70px]">
+                      {currentGrid[driverB]?.team}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 my-1">
+                    <span className="text-2xl md:text-3xl font-black text-white f1-display">
+                      {telemetry.speedB}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-bold f1-display">KM/H</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] pt-1 border-t border-white/10">
+                    <span className="text-gray-300 font-bold">RPM: {telemetry.rpmB}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[9px] font-black f1-display ${
+                        telemetry.drsB === "OPEN"
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                          : "bg-gray-800 text-gray-400"
+                      }`}
+                    >
+                      DRS {telemetry.drsB}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col justify-around h-full py-1 space-y-2">
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-1">
+                      <span className="text-emerald-400 font-black f1-display">{driverB} THROTTLE</span>
+                      <span className="text-white font-bold f1-display">{telemetry.throttleB}%</span>
+                    </div>
+                    <div className="h-2.5 w-full bg-[#080a0f] rounded-full overflow-hidden border border-emerald-500/30">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-75"
+                        style={{ width: `${telemetry.throttleB}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-1">
+                      <span className="text-red-500 font-black f1-display">{driverB} BRAKE</span>
+                      <span className="text-white font-bold f1-display">{telemetry.brakeB}%</span>
+                    </div>
+                    <div className="h-2.5 w-full bg-[#080a0f] rounded-full overflow-hidden border border-red-500/30">
+                      <div
+                        className="h-full bg-gradient-to-r from-red-700 to-red-500 rounded-full transition-all duration-75"
+                        style={{ width: `${telemetry.brakeB}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-16 md:w-20 bg-[#0b0e15] rounded-xl p-2 border border-white/5 flex flex-col items-center justify-center h-full shrink-0">
+                  <span className="text-[9px] text-gray-400 font-bold f1-display">GEAR</span>
+                  <span className="text-3xl md:text-4xl font-black text-cyan-400 f1-display">{telemetry.gearB}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── REQUIREMENT 1 & 2: BIG "COMPARE TELEMETRY" ENGINEERING POP-UP MODAL ── */}
+      {/* ── BIG "COMPARE TELEMETRY" ENGINEERING POP-UP MODAL ── */}
       {showCompareModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 md:p-6">
           <div className="w-full max-w-6xl bg-[#0b0e17] border-2 border-cyan-500/50 rounded-3xl shadow-[0_0_80px_rgba(0,240,255,0.25)] overflow-hidden flex flex-col max-h-[92vh]">
-            {/* Modal Header with Driver Pair & Per-Lap Dropdown Selector */}
             <div className="px-6 py-4 bg-[#101420] border-b border-white/10 flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <GitCompare className="w-6 h-6 text-red-500" />
@@ -3712,7 +3788,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Lap Dropdown Selector inside the Modal */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 bg-[#171c2b] border border-cyan-400/50 px-3 py-1.5 rounded-xl">
                   <Clock className="w-4 h-4 text-cyan-400" />
@@ -3732,6 +3807,7 @@ export default function App() {
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => setShowCompareModal(false)}
                   className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/40 text-red-300 border border-red-500/40"
                 >
@@ -3740,11 +3816,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Modal Body: 3 Core Real-Time Segments + Speed/Throttle/Brake Trace */}
-            <div className="p-6 overflow-y-auto space-y-6">
-              {/* 3 REQUIRED SEGMENTS GRID */}
+            <div className="p-6 overflow-y-auto no-scrollbar space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {/* SEGMENT 1: REAL GAP & SECTOR SPLIT DOMINANCE */}
                 <div className="bg-[#121723] border border-cyan-500/30 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
                     <span className="text-xs font-black text-cyan-400 f1-display flex items-center gap-1.5">
@@ -3788,7 +3861,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* SEGMENT 2: TYRE USAGE, COMPOUND & WEAR LIFE */}
                 <div className="bg-[#121723] border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
                     <span className="text-xs font-black text-amber-400 f1-display flex items-center gap-1.5">
@@ -3824,7 +3896,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* SEGMENT 3: PIT STOPS, STINT STRATEGY & TOP SPEED */}
                 <div className="bg-[#121723] border border-red-500/30 rounded-2xl p-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
                     <span className="text-xs font-black text-red-400 f1-display flex items-center gap-1.5">
@@ -3859,7 +3930,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* FULL-WIDTH TELEMETRY SPEED & THROTTLE OVERLAY CHART */}
               <div className="bg-[#121723] border border-white/10 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-black text-white f1-display">
@@ -3912,20 +3982,18 @@ export default function App() {
         </div>
       )}
 
-      {/* ── REQUIREMENT 7: INTERACTIVE 3D WORLD GLOBE MODAL (WITH SEGMENTED USA & ITALY) ── */}
+      {/* ── INTERACTIVE 3D WORLD GLOBE MODAL (WITH SEGMENTED USA & ITALY) ── */}
       {showGlobeModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-2xl flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-2xl flex items-center justify-center p-4 md:p-6">
           <div className="w-full max-w-6xl bg-[#0b0e17] border-2 border-cyan-400/50 rounded-3xl shadow-[0_0_90px_rgba(6,182,212,0.3)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 max-h-[92vh]">
-            {/* Left 3D Interactive Globe Viewport */}
-            <div className="lg:col-span-6 relative bg-[#060913] min-h-[460px] flex flex-col items-center justify-center border-r border-white/10">
-              <div ref={globeCanvasRef} className="w-full h-[480px] cursor-pointer" />
+            <div className="lg:col-span-6 relative bg-[#060913] min-h-[360px] md:min-h-[460px] flex flex-col items-center justify-center border-r border-white/10">
+              <div ref={globeCanvasRef} className="w-full h-[360px] md:h-[480px] cursor-pointer" />
               <div className="absolute top-4 left-4 bg-black/70 px-3 py-1.5 rounded-xl border border-cyan-500/40 text-xs text-cyan-300 font-bold f1-display">
                 INTERACTIVE 3D F1 GLOBE • CLICK ANY HIGHLIGHTED PIN
               </div>
             </div>
 
-            {/* Right Highlighted F1 Countries & Multi-Segment Selector (USA = 3 Segments, Italy = 2 Segments) */}
-            <div className="lg:col-span-6 p-6 flex flex-col justify-between overflow-y-auto max-h-[88vh]">
+            <div className="lg:col-span-6 p-6 flex flex-col justify-between overflow-y-auto no-scrollbar max-h-[88vh]">
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
                   <div>
@@ -3937,6 +4005,7 @@ export default function App() {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setShowGlobeModal(false)}
                     className="p-2 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/40"
                   >
@@ -3944,14 +4013,14 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Highlighted Segmented USA & Italy Priority Cards */}
                 <div className="mb-4 space-y-2">
                   <div className="text-[11px] font-black text-cyan-400 f1-display">
                     UNITED STATES — 3 DISTINCT GRAND PRIX SEGMENTS:
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {GLOBE_F1_LOCATIONS.filter((l) => l.id.startsWith("USA_")).map((loc) => (
                       <button
+                        type="button"
                         key={loc.id}
                         onClick={() => {
                           setSelectedCircuit(loc.circuit);
@@ -3969,9 +4038,10 @@ export default function App() {
                   <div className="text-[11px] font-black text-emerald-400 f1-display pt-2">
                     ITALY — 2 DISTINCT GRAND PRIX SEGMENTS:
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {GLOBE_F1_LOCATIONS.filter((l) => l.id.startsWith("ITALY_")).map((loc) => (
                       <button
+                        type="button"
                         key={loc.id}
                         onClick={() => {
                           setSelectedCircuit(loc.circuit);
@@ -3987,15 +4057,15 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* All Other Highlighted F1 Host Countries */}
                 <div className="text-[11px] font-black text-gray-300 f1-display mb-2">
                   ALL HIGHLIGHTED F1 CHAMPIONSHIP HOST COUNTRIES:
                 </div>
-                <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto no-scrollbar pr-1">
                   {GLOBE_F1_LOCATIONS.filter(
                     (l) => !l.id.startsWith("USA_") && !l.id.startsWith("ITALY_")
                   ).map((loc) => (
                     <button
+                      type="button"
                       key={loc.id}
                       onClick={() => {
                         setSelectedCircuit(loc.circuit);
@@ -4020,15 +4090,15 @@ export default function App() {
 
       {/* ── SLIDE-OVER EXPANDABLE AI RACE ENGINEER DRAWER ── */}
       <div
-        className={`fixed top-0 right-0 h-screen bg-[#0b0d13]/95 backdrop-blur-2xl border-l border-cyan-500/30 z-40 flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.85)] transition-all duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-screen bg-[#0b0d13]/95 backdrop-blur-2xl border-l border-cyan-500/30 z-50 flex flex-col shadow-[-20px_0_60px_rgba(0,0,0,0.85)] transition-all duration-300 ease-in-out ${
           isAgentOpen
             ? isAgentMaximized
-              ? "w-[860px]"
-              : "w-[540px]"
-            : "w-[540px] translate-x-full pointer-events-none"
+              ? "w-full md:w-[860px]"
+              : "w-full sm:w-[540px]"
+            : "w-full sm:w-[540px] translate-x-full pointer-events-none"
         }`}
       >
-        <div className="h-16 border-b border-[#1f2430] flex items-center justify-between px-6 bg-[#0f121a]">
+        <div className="h-14 border-b border-[#1f2430] flex items-center justify-between px-6 bg-[#0f121a]">
           <div className="flex items-center gap-3">
             <Radio className="w-5 h-5 text-red-500 animate-pulse" />
             <span className="text-sm font-extrabold text-white f1-display">
@@ -4037,18 +4107,21 @@ export default function App() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setShowVoiceSettings(!showVoiceSettings)}
               className="p-2 rounded-lg bg-[#151821] text-gray-300 hover:text-white"
             >
               <Settings2 className="w-4 h-4" />
             </button>
             <button
+              type="button"
               onClick={() => setAudioEnabled(!audioEnabled)}
               className="p-2 rounded-lg bg-[#151821] text-emerald-400"
             >
               {audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
             <button
+              type="button"
               onClick={() => setIsAgentMaximized(!isAgentMaximized)}
               className="p-2 rounded-lg bg-[#151821] text-cyan-400"
             >
@@ -4059,6 +4132,7 @@ export default function App() {
               )}
             </button>
             <button
+              type="button"
               onClick={() => setIsAgentOpen(false)}
               className="p-2 rounded-lg bg-red-500/10 text-red-400"
             >
@@ -4089,7 +4163,7 @@ export default function App() {
           </div>
         )}
 
-        <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div ref={chatScrollRef} className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-4">
           {messages.map((m, idx) => (
             <div
               key={idx}
@@ -4126,7 +4200,6 @@ export default function App() {
                   </div>
                 )}
               </div>
-              {/* Ensure full text preservation and whitespace formatting */}
               <div className="text-gray-200 whitespace-pre-wrap leading-relaxed">
                 {m.text}
               </div>
