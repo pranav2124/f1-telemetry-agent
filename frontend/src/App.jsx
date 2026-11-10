@@ -2966,7 +2966,7 @@ export default function App() {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/live_grid", {
+      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/radio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
