@@ -230,7 +230,7 @@ def _resolve_fastf1_session(year: int, grand_prix: str, session_code: str):
             if sub_segment.endswith("1") and q1_laps is not None and len(q1_laps) > 0:
                 laps = q1_laps
             elif sub_segment.endswith("2") and q2_laps is not None and len(q2_laps) > 0:
-                laps = q1_laps if q2_laps is None else q2_laps
+                laps = q2_laps
             elif sub_segment.endswith("3") and q3_laps is not None and len(q3_laps) > 0:
                 laps = q3_laps
         except Exception:
