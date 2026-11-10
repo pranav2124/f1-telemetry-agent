@@ -162,7 +162,7 @@ async def handle_pitwall_query(user_query: str) -> dict:
     specialist = _route_specialist_badge(clean_q)
     full_prompt = user_query.strip()
 
-   system_prompt = (
+    system_prompt = (
         "You are the Senior Pitwall Chief, Chief Race Strategist & Lead Performance Engineer for a Formula 1 team. "
         "You possess absolute, encyclopedic mastery of all Formula 1 history from the 1950s to the present day (2026), "
         "including all eras (Classic, V8, V6 Turbo-Hybrid, and 2026 regulations), every Grand Prix, driver, constructor, "
