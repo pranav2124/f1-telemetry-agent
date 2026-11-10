@@ -18,13 +18,21 @@ except Exception:
     pass
 
 ROOT_DIR = Path(__file__).resolve().parent
-load_dotenv(dotenv_path=ROOT_DIR / ".env", override=True)
-load_dotenv(dotenv_path=ROOT_DIR / "frontend" / ".env", override=True)
-load_dotenv(override=True)
 
+# Explicitly check system environment first, then fallback to .env files
 GLOBAL_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
-print(f"[Pitwall Boot Check] GROQ_API_KEY detected: {'YES (' + GLOBAL_GROQ_KEY[:8] + '...)' if GLOBAL_GROQ_KEY else 'NO - MISSING!'}")
 
+if not GLOBAL_GROQ_KEY or "GROQ_API_KEY=" in GLOBAL_GROQ_KEY:
+    load_dotenv(dotenv_path=ROOT_DIR / ".env", override=True)
+    load_dotenv(dotenv_path=ROOT_DIR / "frontend" / ".env", override=True)
+    load_dotenv(override=True)
+    GLOBAL_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
+
+# Clean up in case any accidental 'GROQ_API_KEY=' prefix made it through
+if GLOBAL_GROQ_KEY.startswith("GROQ_API_KEY="):
+    GLOBAL_GROQ_KEY = GLOBAL_GROQ_KEY.replace("GROQ_API_KEY=", "").strip()
+
+print(f"[Pitwall Boot Check] GROQ_API_KEY detected: {'YES (' + GLOBAL_GROQ_KEY[:8] + '...)' if GLOBAL_GROQ_KEY else 'NO - MISSING!'}")
 try:
     from groq import Groq
 except ImportError:
