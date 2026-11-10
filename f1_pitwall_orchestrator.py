@@ -101,7 +101,7 @@ def _query_groq_direct_http(user_prompt: str, system_prompt: str) -> tuple[str, 
         return "", "GROQ_API_KEY is empty"
 
     last_err = ""
-    for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+    for model_name in ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]:
         try:
             payload = json.dumps({
                 "model": model_name,
@@ -179,7 +179,7 @@ async def handle_pitwall_query(user_query: str) -> dict:
 
     client = get_groq_client()
     if client:
-        for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
+        for model_name in ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]:
             try:
                 chat_completion = client.chat.completions.create(
                     messages=[
