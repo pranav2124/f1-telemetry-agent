@@ -1,0 +1,11 @@
+.env
+**/.env
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+f1_cache/
+fastf1_cache/
+.DS_Store
+Thumbs.db

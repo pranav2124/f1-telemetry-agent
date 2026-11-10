@@ -2,6 +2,7 @@ import os
 import re
 import json
 import urllib.request
+import urllib.error
 from pathlib import Path
 
 os.environ["FASTF1_NO_AUTH"] = "1"
@@ -18,11 +19,16 @@ except Exception:
     pass
 
 ROOT_DIR = Path(__file__).resolve().parent
-load_dotenv(dotenv_path=ROOT_DIR / ".env", override=True)
-load_dotenv(dotenv_path=ROOT_DIR / "frontend" / ".env", override=True)
-load_dotenv(override=True)
+# Load .env files without overwriting already-set Render environment variables
+load_dotenv(dotenv_path=ROOT_DIR / ".env", override=False)
+load_dotenv(dotenv_path=ROOT_DIR / "frontend" / ".env", override=False)
 
-GLOBAL_GROQ_KEY = os.getenv("GROQ_API_KEY", "").strip()
+def get_groq_api_key() -> str:
+    raw_key = os.getenv("GROQ_API_KEY", "")
+    # Strip spaces, single quotes, and double quotes
+    return raw_key.strip().strip('"').strip("'")
+
+GLOBAL_GROQ_KEY = get_groq_api_key()
 print(f"[Pitwall Boot Check] GROQ_API_KEY detected: {'YES (' + GLOBAL_GROQ_KEY[:8] + '...)' if GLOBAL_GROQ_KEY else 'NO - MISSING!'}")
 
 try:
@@ -82,12 +88,6 @@ def _detect_time_of_day(grand_prix: str, session_code: str, f1_sess=None) -> str
     return "AFTERNOON"
 
 
-def get_groq_api_key() -> str:
-    if GLOBAL_GROQ_KEY:
-        return GLOBAL_GROQ_KEY
-    return os.getenv("GROQ_API_KEY", "").strip()
-
-
 def get_groq_client():
     key = get_groq_api_key()
     if Groq is not None and key:
@@ -95,11 +95,12 @@ def get_groq_client():
     return None
 
 
-def _query_groq_direct_http(user_prompt: str, system_prompt: str) -> str:
+def _query_groq_direct_http(user_prompt: str, system_prompt: str) -> tuple[str, str]:
     api_key = get_groq_api_key()
     if not api_key:
-        return ""
+        return "", "GROQ_API_KEY is empty"
 
+    last_err = ""
     for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
         try:
             payload = json.dumps({
@@ -109,7 +110,7 @@ def _query_groq_direct_http(user_prompt: str, system_prompt: str) -> str:
                     {"role": "user", "content": user_prompt}
                 ],
                 "temperature": 0.35,
-                "max_tokens": 20000  
+                "max_tokens": 4096
             }).encode("utf-8")
 
             req = urllib.request.Request(
@@ -122,15 +123,21 @@ def _query_groq_direct_http(user_prompt: str, system_prompt: str) -> str:
                 },
                 method="POST"
             )
-            with urllib.request.urlopen(req, timeout=12) as resp:
+            with urllib.request.urlopen(req, timeout=20) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 choices = data.get("choices", [])
                 if choices and choices[0].get("message", {}).get("content"):
-                    return choices[0]["message"]["content"].strip()
-        except Exception as e:
-            print(f"[Groq Direct HTTP Error on {model_name}]: {e}")
+                    return choices[0]["message"]["content"].strip(), ""
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="ignore")
+            last_err = f"HTTP {e.code}: {err_body}"
+            print(f"[Groq Direct HTTP Error on {model_name}]: {last_err}")
             continue
-    return ""
+        except Exception as e:
+            last_err = str(e)
+            print(f"[Groq Direct HTTP Error on {model_name}]: {last_err}")
+            continue
+    return "", last_err
 
 
 def _cleanse_user_query(raw_query: str) -> str:
@@ -161,6 +168,15 @@ async def handle_pitwall_query(user_query: str) -> dict:
         "full list without cutting off prematurely. If a [Context: ...] block is present, reference the active season, track, and session."
     )
 
+    api_key = get_groq_api_key()
+    if not api_key:
+        return {
+            "status": "ERROR",
+            "specialist": "COMM ERROR",
+            "answer": "Radio failure: GROQ_API_KEY is missing from environment variables.",
+            "telemetry_data": None
+        }
+
     client = get_groq_client()
     if client:
         for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
@@ -172,7 +188,7 @@ async def handle_pitwall_query(user_query: str) -> dict:
                     ],
                     model=model_name,
                     temperature=0.35,
-                    max_tokens=20000
+                    max_tokens=4096
                 )
                 answer_text = chat_completion.choices[0].message.content.strip()
                 if answer_text:
@@ -185,7 +201,7 @@ async def handle_pitwall_query(user_query: str) -> dict:
             except Exception as e:
                 print(f"[Groq SDK Error on {model_name}]: {e}")
 
-    answer_http = _query_groq_direct_http(full_prompt, system_prompt)
+    answer_http, last_err = _query_groq_direct_http(full_prompt, system_prompt)
     if answer_http:
         return {
             "status": "SUCCESS",
@@ -197,7 +213,7 @@ async def handle_pitwall_query(user_query: str) -> dict:
     return {
         "status": "ERROR",
         "specialist": "COMM ERROR",
-        "answer": "Radio failure: Groq API key is missing or invalid. Check your .env file in the root directory.",
+        "answer": f"Radio failure: {last_err or 'Groq API key is invalid or expired.'}",
         "telemetry_data": None
     }
 

@@ -593,7 +593,7 @@ const HISTORICAL_GRIDS = {
   }
 };
 
-const API_BASE_URL = window.location.hostname === "localhost" 
+const API_BASE_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
   ? "http://127.0.0.1:8000" 
   : "https://f1-telemetry-agent-backend.onrender.com";
 
@@ -665,7 +665,7 @@ export default function App() {
     const fetchLiveGrid = async () => {
       tickCounter += 0.45;
       try {
-        const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/live_grid", {
+        const res = await fetch(`${API_BASE_URL}/api/live_grid`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -2311,10 +2311,10 @@ export default function App() {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 18000);
+const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
-      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/compare", {
+  const res = await fetch(`${API_BASE_URL}/api/compare`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2378,10 +2378,10 @@ export default function App() {
     }));
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 18000);
+const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
-      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/circuit", {
+      const res = await fetch(`${API_BASE_URL}/api/circuit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2951,53 +2951,55 @@ export default function App() {
     setCameraMode((prev) => (prev === "CHASE_A" ? "ORBIT" : "CHASE_A"));
   };
 
-  const sendRadioMessage = async (e) => {
-    e?.preventDefault();
-    if (!query.trim() || loading) return;
-    const currentQuery = query;
-    setQuery("");
-    setLoading(true);
+const sendRadioMessage = async (e) => {
+  e?.preventDefault();
+  if (!query.trim() || loading) return;
+  const currentQuery = query;
+  setQuery("");
+  setLoading(true);
+  setMessages((prev) => [
+    ...prev,
+    { sender: "DRIVER", text: currentQuery, specialist: "RADIO", time: "OUTGOING" }
+  ]);
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/radio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: `[Context: Season ${selectedSeason}, Circuit: ${selectedCircuit} GP, Session: ${selectedSession}, Active Duel: ${driverA} vs ${driverB}, Selected Lap: ${selectedLap}] ${currentQuery}`
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    const data = await res.json();
     setMessages((prev) => [
       ...prev,
-      { sender: "DRIVER", text: currentQuery, specialist: "RADIO", time: "OUTGOING" }
+      {
+        sender: "PITWALL CHIEF",
+        text: data.answer || "Copy that.",
+        specialist: data.specialist || "STRATEGIST",
+        time: "RADIO IN"
+      }
     ]);
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-    try {
-      const res = await fetch("https://f1-telemetry-agent-backend.onrender.com/api/radio", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: `[Context: Season ${selectedSeason}, Circuit: ${selectedCircuit} GP, Session: ${selectedSession}, Active Duel: ${driverA} vs ${driverB}, Selected Lap: ${selectedLap}] ${currentQuery}`
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      const data = await res.json();
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "PITWALL CHIEF",
-          text: data.answer || "Copy that.",
-          specialist: data.specialist || "STRATEGIST",
-          time: "RADIO IN"
-        }
-      ]);
+    if (data.status === "SUCCESS" && data.answer) {
       speakRadioMessage(data.answer);
-    } catch (e) {
-      clearTimeout(timeoutId);
-      const errReason = e.name === "AbortError" ? "Backend request timed out (15s)" : "Backend unreachable.";
-      setMessages((prev) => [
-        ...prev,
-        { sender: "SYSTEM", text: errReason, specialist: "OFFLINE", time: "ERR" }
-      ]);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (e) {
+    clearTimeout(timeoutId);
+    const errReason = e.name === "AbortError" ? "Backend request timed out (45s) — Render server is waking up, please try sending again!" : "Backend unreachable.";
+    setMessages((prev) => [
+      ...prev,
+      { sender: "SYSTEM", text: errReason, specialist: "OFFLINE", time: "ERR" }
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const activeSessionObj =
     availableSessions.find((s) => s.id === selectedSession) || ALL_SESSIONS[0];
